@@ -47,7 +47,10 @@ public class Vector2D {
      public static Vector2D mult_scal(Vector2D a, double k){
         return new Vector2D(k*a.getX(),k*a.getY());
     }
-     
+    
+     public static double norm (Vector2D a){
+         return Math.sqrt(Math.pow(a.getX(), 2) + Math.pow(a.getY(), 2));
+     }
      public static double norm(Vector2D a, Vector2D b){
          return Math.sqrt(Math.pow(b.getX()-a.getX(), 2)+Math.pow(b.getY()-a.getY(), 2));
      }

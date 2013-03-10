@@ -8,6 +8,7 @@ import maths.Vector2D;
 
 
 /**
+ * Particle representation
  * @author Cyril Cecchinel
  */
 public class Particle {
@@ -44,6 +45,7 @@ public class Particle {
         this.velocity = velocity;
         this.weight=weight;
         this.radius=radius;
+        this.forces = new Vector2D();
     }
 
     public Vector2D getAcceleration() {

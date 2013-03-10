@@ -12,7 +12,7 @@ public class Parameters {
     
     public static final int NB_PARTICLE = 100; // Number of particles
     
-    public static final double TE = 0.0002; // Sampling
+    public static final double TE = 0.00002; // Sampling
     public static final double TF = 100; // Final time
     
     public static final double WEIGHT_PARTICLE = 1.0; // Weight of one particle

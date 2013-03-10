@@ -17,9 +17,9 @@ public class MolecularDynamic {
         // TODO code application logic here
         UnitCell a = new UnitCell(3);
         System.out.println("Initial :" + a.lstParticle.toString());
-        for (int i=0;i<3;i++){
+        for (int i=0;i<100;i++){
             a.nextState();
-            System.out.println("Tour " + i + " :" + a.lstParticle.toString());
+           // System.out.println("Tour " + i + " :" + a.lstParticle.toString());
         }
         
     }
