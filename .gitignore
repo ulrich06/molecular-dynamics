@@ -1,8 +1,29 @@
+# NetBeans #
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# Eclipse
+.project
+.metadata
+bin/**
+.classpath
+.settings/
+.loadpath
+
+# Class Files #
 *.class
+
+# Package Files #
 *.jar
 *.war
 *.ear
 
+# System
 *.DS_Store
 *.DS_Store?
 *._*
