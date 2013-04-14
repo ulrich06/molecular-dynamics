@@ -118,6 +118,16 @@ public class Vector2D
     {
         return new Vector2D(v.getX() * k, v.getY() * k);
     }
+
+    /**
+     * Compute the opposite of a vector and returns a newly allocated vector
+     * @param v The vector
+     * @return The new vector
+     */
+    public static Vector2D opposite(Vector2D v)
+    {
+    	return Vector2D.mult_scal(v, -1);
+    }
     
     /**
      * Get the distance between two vectors
@@ -129,6 +139,7 @@ public class Vector2D
     {
         return Math.sqrt(Math.pow(b.getX() - a.getX(), 2) + Math.pow(b.getY() - a.getX(), 2));
     }
+    
 
     public double getX ()
     {

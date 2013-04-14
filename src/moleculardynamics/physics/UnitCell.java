@@ -28,8 +28,11 @@ public class UnitCell
 		// TODO : Best random creation algorithm
 		for (; n > 0; n--)
 		{
-			Vector2D position = new Vector2D(Math.random(), Math.random());
-			Vector2D velocity = new Vector2D(10, 10);
+			int randomX = (int)(Math.random()*Parameters.BOX_WIDTH);
+			int randomY = (int)(Math.random()*Parameters.BOX_WIDTH);
+					
+			Vector2D position = new Vector2D(randomX, randomY);
+			Vector2D velocity = new Vector2D();
 
 			Particle p = new Particle(this, position, velocity, Parameters.PARTICLE_RADIUS, Parameters.PARTICLE_WEIGHT);
 			particles.add(p);
@@ -114,7 +117,7 @@ public class UnitCell
 	/*
 	 * Compute acceleration for each particle. Use Lennard-Jones potential
 	 */
-	private void computeAccelerations(){
+	private synchronized void computeAccelerations(){
 
 		// Check if particles are going outside the box
 		for (Particle p : particles){
@@ -156,9 +159,10 @@ public class UnitCell
 				}
 			}
 
-			// Gravity force
+			// Gravity force (vertical force)
 			initialAcceleration.setY(initialAcceleration.getY() - Parameters.GRAVITY);
 
+			
 			// We set initial acceleration vector to the current particle
 			p.setAcceleration(initialAcceleration);
 
@@ -202,11 +206,19 @@ public class UnitCell
 			}
 		}
 	}
-
+	
+	public double getElapsedTime()
+	{
+		return elapsedTime;
+		
+	}
 	public String toString(){
 		String result = "UnitCell [T= " + elapsedTime + " ] : ";
 		for (Particle p : particles){
-			result += p.toString() + " ";
+			
+			result += '\n';
+			result += '\t';
+			result += p.toString();
 		}
 		return result;
 
