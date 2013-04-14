@@ -15,6 +15,12 @@ public class MolecularDynamics
     {
         /* Create and start the simulation */
         UnitCell uc = new UnitCell(Parameters.PARTICLE_COUNT);
-        uc.start();
+       
+        for (int i = 1; i <= 1000 ; i++)
+        {
+	        System.out.println("Step #" + i + " - " +uc.toString());
+	        uc.oneStep();
+        }
+      
     }
 }

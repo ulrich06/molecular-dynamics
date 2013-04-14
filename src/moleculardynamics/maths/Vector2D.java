@@ -118,6 +118,17 @@ public class Vector2D
     {
         return new Vector2D(v.getX() * k, v.getY() * k);
     }
+    
+    /**
+     * Get the distance between two vectors
+     * @param a The first vector
+     * @param b The second vector
+     * @return Distance between the vectors
+     */
+    public static double norm(Vector2D a, Vector2D b)
+    {
+        return Math.sqrt(Math.pow(b.getX() - a.getX(), 2) + Math.pow(b.getY() - a.getX(), 2));
+    }
 
     public double getX ()
     {

@@ -9,9 +9,17 @@ public class Parameters
 {
     /* Number of particles */
     public static final int PARTICLE_COUNT = 10;
-
+    
+    /* Box width */
+    public static final double BOX_WIDTH = 100;
+    
+    /* Wall stiffness */
+    public static final double WALL_STIFFNESS = 50;
+    /* Gravity */
+    public static final double GRAVITY = 0.0;
+    
     /* Sampling */
-    public static final double TE = 0.00002;
+    public static final double DT = 0.00002;
 
     /* Simulation time */
     public static final double TF = 100;
@@ -20,8 +28,11 @@ public class Parameters
     public static final double PARTICLE_WEIGHT = 1.0;
 
     /* Particle radius */
-    public static final double PARTICLE_RADIUS = 0.04;
+    public static final double PARTICLE_RADIUS = 1;
 
     /* Depth of the Lennard Jones' potential well */
     public static final double EPSILON = 1.0;
+    
+    /* Minimal distance for computing interactions between two particles */
+    public static final double FORCECUTOFF = 3.0;
 }
