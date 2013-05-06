@@ -22,6 +22,8 @@ public class Particle implements Runnable
     private double radius;
     private double weight;
 
+    private boolean isPaused;
+
 
     /**
      * Create a particle with default properties
@@ -35,6 +37,7 @@ public class Particle implements Runnable
         this.acceleration = new Vector2D();
         this.radius = 1.0;
         this.weight = 1.0;
+        this.isPaused = false;
     }
 
     /**
@@ -53,6 +56,7 @@ public class Particle implements Runnable
         this.acceleration = new Vector2D();
         this.radius = radius;
         this.weight = weight;
+        this.isPaused = false;
     }
 
     /**
@@ -60,117 +64,119 @@ public class Particle implements Runnable
      */
     public synchronized void run ()
     {
-    	final double dtOver2 = Parameters.DT * 0.5;
-		final double dtSquaredOver2 = Math.pow(Parameters.DT, 2) * 0.5;
-        // TODO : Particle thread routine
+        final double dtOver2 = Parameters.DT * 0.5;
+        final double dtSquaredOver2 = Math.pow(Parameters.DT, 2) * 0.5;
+
         while (true)
         { 
-			// nextPosition = position + (velocity * dt) + (acceleration * 0.5 dt * dt)
-			newPosition = Vector2D.add(getPosition(), 
-					Vector2D.add(Vector2D.mult_scal(getVelocity(), Parameters.DT), Vector2D.mult_scal(getAcceleration(), dtSquaredOver2)));
+            if (!isPaused) {
+                // nextPosition = position + (velocity * dt) + (acceleration * 0.5 dt * dt)
+                newPosition = Vector2D.add(getPosition(), 
+                        Vector2D.add(Vector2D.mult_scal(getVelocity(), Parameters.DT), Vector2D.mult_scal(getAcceleration(), dtSquaredOver2)));
 
-			// nextVelocity = velocity + (acceleration * 0.5 * dt)
-			newVelocity = Vector2D.add(getVelocity(),
-					Vector2D.mult_scal(getAcceleration(), dtOver2));
-			
-			computeAccelerations();
-			 
-			newVelocity = Vector2D.add(newVelocity,
-					Vector2D.mult_scal(getAcceleration(), dtOver2));
-			
-			unitCell.cellFinished();
-			
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+                // nextVelocity = velocity + (acceleration * 0.5 * dt)
+                newVelocity = Vector2D.add(getVelocity(),
+                        Vector2D.mult_scal(getAcceleration(), dtOver2));
+
+                computeAccelerations();
+
+                newVelocity = Vector2D.add(newVelocity,
+                        Vector2D.mult_scal(getAcceleration(), dtOver2));
+
+                unitCell.cellFinished();
+
+            }
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
-    
-	private void computeAccelerations(){
-		// Check if particles are going outside the box
-		// Initial values
-		Vector2D initialAcceleration = new Vector2D();
-		// Check horizontal position
-		if (getPosition().getX() < 0)
-		{
 
-			initialAcceleration.setX(- getPosition().getX() * Parameters.WALL_STIFFNESS );
+    private void computeAccelerations(){
+        // Check if particles are going outside the box
+        // Initial values
+        Vector2D initialAcceleration = new Vector2D();
+        // Check horizontal position
+        if (getPosition().getX() < 0)
+        {
 
-		} 
-		else
-		{
+            initialAcceleration.setX(- getPosition().getX() * Parameters.WALL_STIFFNESS );
 
-			if (getPosition().getX() > Parameters.BOX_WIDTH) {
+        } 
+        else
+        {
 
-				initialAcceleration.setX( Parameters.WALL_STIFFNESS * (Parameters.BOX_WIDTH - getPosition().getX()) );
+            if (getPosition().getX() > Parameters.BOX_WIDTH) {
 
-			}
-		}
+                initialAcceleration.setX( Parameters.WALL_STIFFNESS * (Parameters.BOX_WIDTH - getPosition().getX()) );
 
-			// Check vertical position
-			if (getPosition().getY() < 0)
-			{
+            }
+        }
 
-				initialAcceleration.setY(- getPosition().getY() * Parameters.WALL_STIFFNESS );
+        // Check vertical position
+        if (getPosition().getY() < 0)
+        {
 
-			} 
-			else
-			{
+            initialAcceleration.setY(- getPosition().getY() * Parameters.WALL_STIFFNESS );
 
-				if (getPosition().getY() > Parameters.BOX_WIDTH) {
+        } 
+        else
+        {
 
-					initialAcceleration.setY( Parameters.WALL_STIFFNESS * (Parameters.BOX_WIDTH - getPosition().getY()) );
+            if (getPosition().getY() > Parameters.BOX_WIDTH) {
 
-				}
-			}
+                initialAcceleration.setY( Parameters.WALL_STIFFNESS * (Parameters.BOX_WIDTH - getPosition().getY()) );
 
-			// Gravity force (vertical force)
-			initialAcceleration.setY(initialAcceleration.getY() - Parameters.GRAVITY);
+            }
+        }
 
-			
-			// We set initial acceleration vector to the current particle
-			newAcceleration = initialAcceleration;
-
-		// We compute interactions forces using Lennard-Jones potential
-		for (Particle j : unitCell.getParticles()){
-
-			// We need to use distinct pairs
-			if (!this.equals(j)){
-
-				// Compute distance between pairs
-				double distance = Vector2D.norm(getNewPosition(), j.getPosition());
-
-				// Horizontal and vertical distance
-				double dx = getNewPosition().getX() - j.getPosition().getX();
-				double dy = getNewPosition().getY() - j.getPosition().getY();
-
-				double distanceInv = 1.0 / distance;
-
-				//Compute attractive and repulsive forces
-				double attract = Math.pow(Parameters.PARTICLE_RADIUS * distanceInv, 6);
-				double repul = Math.pow(Parameters.PARTICLE_RADIUS * distanceInv, 12);
+        // Gravity force (vertical force)
+        initialAcceleration.setY(initialAcceleration.getY() - Parameters.GRAVITY);
 
 
-				// Force over the distance between particles
-				// F = - 24 * epsilon * [2 * (repul * 1/distance) - (attract * 1/distance)]
-				double fOverDistance = -24 * Parameters.EPSILON * ( 2 * (repul * distanceInv) - (attract * distanceInv) );
+        // We set initial acceleration vector to the current particle
+        newAcceleration = initialAcceleration;
 
-				// Lennard Jones force
-				Vector2D lennardForce = new Vector2D(fOverDistance * dx, fOverDistance * dy);
+        // We compute interactions forces using Lennard-Jones potential
+        for (Particle j : unitCell.getParticles()){
 
-				// New accelerations for both particles
-				Vector2D accelerationP = Vector2D.add(getNewAcceleration(), lennardForce);
-				Vector2D accelerationJ = Vector2D.sub(j.getAcceleration(), lennardForce); // Newton's 3rd law
+            // We need to use distinct pairs
+            if (!this.equals(j)){
 
-				// We set computed values to the particles
-				newAcceleration = accelerationP;
-				j.setNewAcceleration(accelerationJ);
-			}
-		}
-	}
+                // Compute distance between pairs
+                double distance = Vector2D.norm(getNewPosition(), j.getPosition());
+
+                // Horizontal and vertical distance
+                double dx = getNewPosition().getX() - j.getPosition().getX();
+                double dy = getNewPosition().getY() - j.getPosition().getY();
+
+                double distanceInv = 1.0 / distance;
+
+                //Compute attractive and repulsive forces
+                double attract = Math.pow(Parameters.PARTICLE_RADIUS * distanceInv, 6);
+                double repul = Math.pow(Parameters.PARTICLE_RADIUS * distanceInv, 12);
+
+
+                // Force over the distance between particles
+                // F = - 24 * epsilon * [2 * (repul * 1/distance) - (attract * 1/distance)]
+                double fOverDistance = -24 * Parameters.EPSILON * ( 2 * (repul * distanceInv) - (attract * distanceInv) );
+
+                // Lennard Jones force
+                Vector2D lennardForce = new Vector2D(fOverDistance * dx, fOverDistance * dy);
+
+                // New accelerations for both particles
+                Vector2D accelerationP = Vector2D.add(getNewAcceleration(), lennardForce);
+                Vector2D accelerationJ = Vector2D.sub(j.getAcceleration(), lennardForce); // Newton's 3rd law
+
+                // We set computed values to the particles
+                newAcceleration = accelerationP;
+                j.setNewAcceleration(accelerationJ);
+            }
+        }
+    }
 
     public Vector2D getPosition ()
     {
@@ -231,29 +237,33 @@ public class Particle implements Runnable
     {
         this.unitCell = unitCell;
     }
-    
+
     public void setNewAcceleration(Vector2D acc){
-    	this.newAcceleration = acc;
+        this.newAcceleration = acc;
     }
-    
+
     public Vector2D getNewAcceleration(){
-    	return newAcceleration;
+        return newAcceleration;
     }
-    
+
     public Vector2D getNewPosition(){
-    	return newPosition;
+        return newPosition;
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
     }
 
     @Override
     public String toString ()
     {
         return "Particle [position=" + position + ", velocity=" + velocity
-            + ", acceleration=" + acceleration + ", radius=" + radius + ", weight=" + weight + "]";
+                + ", acceleration=" + acceleration + ", radius=" + radius + ", weight=" + weight + "]";
     }
-    
+
     public void update(){
-    	this.acceleration = newAcceleration;
-    	this.position = newPosition;
-    	this.velocity = newVelocity;
+        this.acceleration = newAcceleration;
+        this.position = newPosition;
+        this.velocity = newVelocity;
     }
 }
