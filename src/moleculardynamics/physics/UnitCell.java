@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import moleculardynamics.Parameters;
+
 import moleculardynamics.maths.Vector2D;
 
 
@@ -11,10 +12,12 @@ import moleculardynamics.maths.Vector2D;
  * Unit cell class
  * Contains a pool of particles
  */
-public class UnitCell
+public class UnitCell implements Runnable
 {
 	private List<Particle> particles;
 	private double elapsedTime = 0;
+	private int nbCells;
+	private int nbCellsUpdate;
 
 	/**
 	 * Create an unit cell with an initial number of particles
@@ -23,7 +26,7 @@ public class UnitCell
 	public UnitCell (int n)
 	{
 		particles = new ArrayList<Particle>(n);
-
+		nbCells = n;
 		/* Create random particles */
 		// TODO : Best random creation algorithm
 		for (; n > 0; n--)
@@ -32,7 +35,7 @@ public class UnitCell
 			int randomY = (int)(Math.random()*Parameters.BOX_WIDTH);
 					
 			Vector2D position = new Vector2D(randomX, randomY);
-			Vector2D velocity = new Vector2D();
+			Vector2D velocity = new Vector2D(randomX, randomY);
 
 			Particle p = new Particle(this, position, velocity, Parameters.PARTICLE_RADIUS, Parameters.PARTICLE_WEIGHT);
 			particles.add(p);
@@ -56,62 +59,24 @@ public class UnitCell
 	/**
 	 * Execute one step using Verlet algorithm
 	 */
-	public synchronized void oneStep(){
-
-		// Current physical parameters
-
-		Vector2D currentPosition;
-		Vector2D currentVelocity;
-		Vector2D currentAcceleration;
-
-		// Next positions computed using Verlet algorithm
-
-		Vector2D nextPosition;
-		Vector2D nextVelocity;
-
-
-		// Constant values
-
-		final double dtOver2 = Parameters.DT * 0.5;
-		final double dtSquaredOver2 = Math.pow(Parameters.DT, 2) * 0.5;
-
-		// Compute next position and velocity for each particle
-		for (Particle p : particles){
-			currentPosition = p.getPosition();
-			currentVelocity = p.getVelocity();
-			currentAcceleration = p.getAcceleration(); 
-
-			// nextPosition = position + (velocity * dt) + (acceleration * 0.5 dt * dt)
-			nextPosition = Vector2D.add(currentPosition, 
-					Vector2D.add(Vector2D.mult_scal(p.getVelocity(), Parameters.DT), Vector2D.mult_scal(currentAcceleration, dtSquaredOver2)));
-
-			// nextVelocity = velocity + (acceleration * 0.5 * dt)
-			nextVelocity = Vector2D.add(currentVelocity,
-					Vector2D.mult_scal(currentAcceleration, 0.5 * Parameters.DT));
-
-			// We set computed values to the particle
-			p.setPosition(nextPosition);
-			p.setVelocity(nextVelocity);
+	@Override
+	public synchronized void run() {
+		
+		this.start();
+		
+		while(true){
+			if(nbCellsUpdate == nbCells)
+			{
+				for (Particle p : getParticles()){
+					p.update();
+				}
+				nbCellsUpdate = 0;
+				notifyAll();
+			}
+			elapsedTime += Parameters.DT;
+			System.out.println(this.toString());
 		}
-
-		// We compute accelerations between each particle
-		computeAccelerations();
-
-		// Finish updating velocity using new accelerations
-		for (Particle p : particles)
-		{
-			currentVelocity = p.getVelocity();
-
-			// nextVelocity = velocity + (acceleration * 0.5 * dt)
-			nextVelocity = Vector2D.add(currentVelocity,
-					Vector2D.mult_scal(p.getAcceleration(), dtOver2));
-
-			// We set the computed value to the particle
-			p.setVelocity(nextVelocity);
-		}
-
-		elapsedTime += Parameters.DT;
-
+		
 	}
 
 	/*
@@ -212,6 +177,7 @@ public class UnitCell
 		return elapsedTime;
 		
 	}
+	
 	public String toString(){
 		String result = "UnitCell [T= " + elapsedTime + " ] : ";
 		for (Particle p : particles){
@@ -223,5 +189,12 @@ public class UnitCell
 		return result;
 
 	}
-
+	
+	public synchronized void cellFinished(){
+		nbCellsUpdate++;
+	}
+	
+	public List<Particle> getParticles(){
+		return particles;
+	}
 }
