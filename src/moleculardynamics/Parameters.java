@@ -8,7 +8,7 @@ package moleculardynamics;
 public class Parameters
 {
     /* Number of particles */
-    public static final int PARTICLE_COUNT = 4;
+    public static final int PARTICLE_COUNT = 40;
     
     /* Box width */
     public static final double BOX_WIDTH = 100;
@@ -17,7 +17,7 @@ public class Parameters
     public static final double WALL_STIFFNESS = 1;
     
     /* Gravity */
-    public static final double GRAVITY = 10;
+    public static final double GRAVITY = 1;
     
     /* Sampling */
     public static final double DT = 0.02;

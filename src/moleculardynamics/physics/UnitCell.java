@@ -7,6 +7,7 @@ import java.util.concurrent.CyclicBarrier;
 import moleculardynamics.Parameters;
 
 import moleculardynamics.maths.Vector2D;
+import moleculardynamics.ui.UnitCellListener;
 
 
 /**
@@ -21,6 +22,9 @@ public class UnitCell implements Runnable
 	private int nbCellsUpdate;
 	private ThreadGroup group;
 	private CyclicBarrier barrier;
+	
+	public UnitCellListener listener;
+    public boolean isPaused = false;
 	
 	/**
 	 * Create an unit cell with an initial number of particles
@@ -47,7 +51,7 @@ public class UnitCell implements Runnable
 			int randomY = (int)(Math.random()*Parameters.BOX_WIDTH);
 					
 			Vector2D position = new Vector2D(randomX, randomY);
-			Vector2D velocity = new Vector2D((int)(Math.random()*Parameters.BOX_WIDTH), (int)(Math.random()*Parameters.BOX_WIDTH));
+			Vector2D velocity = new Vector2D(1,1);
 
 			Particle p = new Particle(this, position, velocity, Parameters.PARTICLE_RADIUS, Parameters.PARTICLE_WEIGHT);
 			particles.add(p);
@@ -75,10 +79,13 @@ public class UnitCell implements Runnable
 	public void run() {
 		
 		while(elapsedTime < 1) {
-			
-			elapsedTime += Parameters.DT;
-			System.out.println("Updated : " + barrier.getNumberWaiting());
-			System.out.println(this.toString());
+			System.out.flush();
+			if (!isPaused) {
+				elapsedTime += Parameters.DT;
+				System.out.println("Updated : " + barrier.getNumberWaiting());
+				System.out.println(this.toString());
+				update();
+			}
 		}
 	}
 	
@@ -111,4 +118,16 @@ public class UnitCell implements Runnable
 	public synchronized CyclicBarrier getBarrier() {
 		return barrier;
 	}
+	
+	public void addUnitCellListener(UnitCellListener ig) {
+        listener = ig;
+    }
+
+    public void update() {
+        listener.updateUnitCell();
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
+    }
 }

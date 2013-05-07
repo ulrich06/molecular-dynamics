@@ -23,6 +23,8 @@ public class Particle implements Runnable
 
     private double radius;
     private double weight;
+    
+    private boolean isPaused;
 
 
     /**
@@ -257,5 +259,9 @@ public class Particle implements Runnable
     	this.acceleration = newAcceleration;
     	this.position = newPosition;
     	this.velocity = newVelocity;
+    }
+    
+    public void setPaused(boolean paused) {
+        isPaused = paused;
     }
 }
