@@ -17,7 +17,7 @@ public class Parameters
     public static final double WALL_STIFFNESS = 1;
     
     /* Gravity */
-    public static final double GRAVITY = 1;
+    public static final double GRAVITY = 10;
     
     /* Sampling */
     public static final double DT = 0.02;

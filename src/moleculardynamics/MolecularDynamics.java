@@ -16,6 +16,8 @@ public class MolecularDynamics
         /* Create and start the simulation */
         UnitCell uc = new UnitCell(Parameters.PARTICLE_COUNT);
         Thread t = new Thread(uc, "UC#");
+        uc.start();
+        System.out.println(uc.toString());
         t.start();
         //while(uc.getElapsedTime() < Parameters.TF)
       

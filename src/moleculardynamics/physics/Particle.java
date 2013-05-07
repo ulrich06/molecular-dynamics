@@ -1,5 +1,7 @@
 package moleculardynamics.physics;
 
+import java.util.concurrent.BrokenBarrierException;
+
 import moleculardynamics.Parameters;
 import moleculardynamics.maths.Vector2D;
 
@@ -33,6 +35,9 @@ public class Particle implements Runnable
         this.position = new Vector2D();
         this.velocity = new Vector2D();
         this.acceleration = new Vector2D();
+        this.newPosition = new Vector2D();
+        this.newVelocity = new Vector2D();
+        this.newAcceleration = new Vector2D();
         this.radius = 1.0;
         this.weight = 1.0;
     }
@@ -58,17 +63,16 @@ public class Particle implements Runnable
     /**
      * Run the particle thread routine
      */
-    public synchronized void run ()
+    public void run ()
     {
-    	final double dtOver2 = Parameters.DT * 0.5;
-		final double dtSquaredOver2 = Math.pow(Parameters.DT, 2) * 0.5;
-        // TODO : Particle thread routine
-        while (true)
-        { 
+    	while(true) {
+    		
+			final double dtOver2 = Parameters.DT * 0.5;
+			final double dtSquaredOver2 = Math.pow(Parameters.DT, 2) * 0.5;
 			// nextPosition = position + (velocity * dt) + (acceleration * 0.5 dt * dt)
 			newPosition = Vector2D.add(getPosition(), 
 					Vector2D.add(Vector2D.mult_scal(getVelocity(), Parameters.DT), Vector2D.mult_scal(getAcceleration(), dtSquaredOver2)));
-
+		
 			// nextVelocity = velocity + (acceleration * 0.5 * dt)
 			newVelocity = Vector2D.add(getVelocity(),
 					Vector2D.mult_scal(getAcceleration(), dtOver2));
@@ -77,16 +81,14 @@ public class Particle implements Runnable
 			 
 			newVelocity = Vector2D.add(newVelocity,
 					Vector2D.mult_scal(getAcceleration(), dtOver2));
-			
-			unitCell.cellFinished();
-			
+    		
 			try {
-				wait();
-			} catch (InterruptedException e) {
+				unitCell.getBarrier().await();
+			} catch (InterruptedException | BrokenBarrierException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-        }
+    	}
     }
     
 	private void computeAccelerations(){
@@ -135,7 +137,7 @@ public class Particle implements Runnable
 			newAcceleration = initialAcceleration;
 
 		// We compute interactions forces using Lennard-Jones potential
-		for (Particle j : unitCell.getParticles()){
+		for (Particle j : unitCell.getParticles()) {
 
 			// We need to use distinct pairs
 			if (!this.equals(j)){
@@ -192,12 +194,12 @@ public class Particle implements Runnable
         this.velocity = velocity;
     }
 
-    public Vector2D getAcceleration ()
+    public synchronized Vector2D getAcceleration ()
     {
         return acceleration;
     }
 
-    public void setAcceleration (Vector2D acceleration)
+    public synchronized void setAcceleration (Vector2D acceleration)
     {
         this.acceleration = acceleration;
     }
@@ -232,15 +234,15 @@ public class Particle implements Runnable
         this.unitCell = unitCell;
     }
     
-    public void setNewAcceleration(Vector2D acc){
+    public synchronized void setNewAcceleration(Vector2D acc){
     	this.newAcceleration = acc;
     }
     
-    public Vector2D getNewAcceleration(){
+    public synchronized Vector2D getNewAcceleration(){
     	return newAcceleration;
     }
     
-    public Vector2D getNewPosition(){
+    public synchronized Vector2D getNewPosition(){
     	return newPosition;
     }
 
@@ -251,7 +253,7 @@ public class Particle implements Runnable
             + ", acceleration=" + acceleration + ", radius=" + radius + ", weight=" + weight + "]";
     }
     
-    public void update(){
+    public synchronized void update(){
     	this.acceleration = newAcceleration;
     	this.position = newPosition;
     	this.velocity = newVelocity;
